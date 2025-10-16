@@ -1,0 +1,8 @@
+helm repo add elastic https://helm.elastic.co/ && helm repo update
+
+helm install elastic-operator elastic/eck-operator -n elastic-system --create-namespace
+
+helm install es-kb-quickstart elastic/eck-stack -n elastic-stack --create-namespace
+
+kubectl get secret elasticsearch-es-elastic-user -n elastic-stack \
+-o jsonpath='{.data.elastic}' | base64 --decode
