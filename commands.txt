@@ -6,3 +6,24 @@ helm install es-kb-quickstart elastic/eck-stack -n elastic-stack --create-namesp
 
 kubectl get secret elasticsearch-es-elastic-user -n elastic-stack \
 -o jsonpath='{.data.elastic}' | base64 --decode
+
+helm upgrade --install clbr-eck elastic/eck-stack -n elastic-stack --set eck-logstash.enabled=true
+
+kubectl edit logstash -n elastic-stack
+
+elasticsearchRefs:
+  - clusterName: elasticsearch
+    name: elasticsearch
+  monitoring:
+    logs: {}
+    metrics: {}
+  pipelines:
+  - config.string: "input {\n  rabbitmq {\n    host => \"clbr-rabbitmq.rabbitmq.svc\"\n
+      \   port => 5672\n    user => \"training-user\"\n    password => \"training-password-123\"\n
+      \   queue => \"queue-logs\"\n    exchange => \"logs\"\n    exchange_type =>
+      \"topic\"\n    key => \"myApplication.#\"\n    durable => true\n    auto_delete
+      => false\n    ack => true\n    heartbeat => 30\n  } \n}\noutput {\n  elasticsearch
+      {\n    hosts => [ \"elasticsearch-es-http.elastic-stack.svc\" ]\n    user =>
+      \"elastic\"\n    password => \"w0613S1jNfjhzP4I0N2k07oE\"\n    ssl_enabled =>
+      true\n    ssl_verification_mode => none\n  }\n}   \n"
+    pipeline.id: main
